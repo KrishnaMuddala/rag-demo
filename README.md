@@ -1,111 +1,210 @@
-# MCP Chat
+# rag-demo
 
-MCP Chat is a command-line interface application that enables interactive chat capabilities with AI models through the Anthropic API. The application supports document retrieval, command-based prompts, and extensible tool integrations via the MCP (Model Control Protocol) architecture.
+A RAG (Retrieval-Augmented Generation) application that indexes your documents and lets you chat with them via a browser UI. Built with ChromaDB for vector storage, Ollama for local LLM inference, and Node.js as the web server.
+
+## How It Works
+
+```
+Your Documents (PDF/TXT/MD)
+        │
+        │ index / embed
+        ▼
+   ChromaDB (vector store)
+        │
+        │ similarity search
+        ▼
+  Relevant chunks + your question
+        │
+        │ prompt
+        ▼
+   Ollama (local LLM)
+        │
+        │ answer
+        ▼
+  Browser Chat UI (:3000 via server.js)
+```
+
+## Features
+
+- Index local documents (PDF, TXT, Markdown) into ChromaDB
+- Chat with your documents via a browser UI
+- Fully local — no OpenAI API key needed
+- Powered by Ollama (qwen2.5:7b or any local model)
+- ChromaDB for fast vector similarity search
+- Node.js web server with streaming responses
+
+---
 
 ## Prerequisites
 
-- Python 3.9+
-- Anthropic API Key
+- Python 3.10+
+- Node.js 18+
+- [Ollama](https://ollama.com) installed and running
+- ChromaDB (installed via pip)
 
-## Setup
+---
 
-### Step 1: Configure the environment variables
+## Quick Start
 
-1. Create or edit the `.env` file in the project root and verify that the following variables are set correctly:
-
-```
-ANTHROPIC_API_KEY=""  # Enter your Anthropic API secret key
-```
-
-### Step 2: Install dependencies
-
-#### Option 1: Setup with uv (Recommended)
-
-[uv](https://github.com/astral-sh/uv) is a fast Python package installer and resolver.
-
-1. Install uv, if not already installed:
+### 1. Clone the repo
 
 ```bash
-pip install uv
+git clone https://github.com/KrishnaMuddala/rag-demo.git
+cd rag-demo
 ```
 
-2. Create and activate a virtual environment:
+### 2. Install Python dependencies
 
 ```bash
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+# or
+pip install chromadb ollama langchain
 ```
 
-3. Install dependencies:
+### 3. Install Node.js dependencies
 
 ```bash
-uv pip install -e .
+npm install
 ```
 
-4. Run the project
+### 4. Start Ollama and pull a model
 
 ```bash
-uv run main.py
+ollama serve
+ollama pull qwen2.5:7b
 ```
 
-#### Option 2: Setup without uv
+### 5. Add your documents
 
-1. Create and activate a virtual environment:
+Place your documents (PDF, TXT, MD) in the `documents/` folder:
+
+```
+rag-demo/
+└── documents/
+    ├── my-doc.pdf
+    ├── notes.txt
+    └── guide.md
+```
+
+### 6. Index your documents
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+python index.py
 ```
 
-2. Install dependencies:
+This embeds your documents and stores them in ChromaDB.
+
+### 7. Start the web server
 
 ```bash
-pip install anthropic python-dotenv prompt-toolkit "mcp[cli]==1.8.0"
+node server.js
 ```
 
-3. Run the project
+Open [http://localhost:3000](http://localhost:3000) and start chatting with your documents.
 
-```bash
-python main.py
-```
+---
 
 ## Usage
 
-### Basic Interaction
-
-Simply type your message and press Enter to chat with the model.
-
-### Document Retrieval
-
-Use the @ symbol followed by a document ID to include document content in your query:
-
-```
-> Tell me about @deposition.md
+**Index new documents:**
+```bash
+python index.py
 ```
 
-### Commands
-
-Use the / prefix to execute commands defined in the MCP server:
-
-```
-> /summarize deposition.md
+**Start the chat UI:**
+```bash
+node server.js
 ```
 
-Commands will auto-complete when you press Tab.
+**Ask questions in the browser:**
+```
+What is this document about?
+Summarize the key points from the guide
+Find information about X in my documents
+```
 
-## Development
+---
 
-### Adding New Documents
+## Project Structure
 
-Edit the `mcp_server.py` file to add new documents to the `docs` dictionary.
+```
+rag-demo/
+├── server.js          # Node.js web server — chat UI on :3000
+├── index.py           # Document indexing script — embeds into ChromaDB
+├── documents/         # Place your documents here (PDF, TXT, MD)
+├── chroma_db/         # ChromaDB vector store (auto-created on index)
+├── package.json       # Node.js dependencies
+├── requirements.txt   # Python dependencies
+└── .env               # Configuration (model, ports, paths)
+```
 
-### Implementing MCP Features
+---
 
-To fully implement the MCP features:
+## Configuration
 
-1. Complete the TODOs in `mcp_server.py`
-2. Implement the missing functionality in `mcp_client.py`
+Create a `.env` file in the project root:
 
-### Linting and Typing Check
+```env
+# Ollama
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:7b
+OLLAMA_EMBED_MODEL=nomic-embed-text
 
-There are no lint or type checks implemented.
+# ChromaDB
+CHROMA_PATH=./chroma_db
+CHROMA_COLLECTION=documents
+
+# Server
+PORT=3000
+```
+
+---
+
+## Dependencies
+
+### Python
+| Package | Purpose |
+|---|---|
+| `chromadb` | Vector store for document embeddings |
+| `ollama` | Local LLM inference |
+| `langchain` | Document loading and text splitting |
+
+### Node.js
+| Package | Purpose |
+|---|---|
+| `express` | Web server |
+| `axios` | HTTP requests to Python/Ollama |
+
+---
+
+## Troubleshooting
+
+**Ollama not running**
+```bash
+ollama serve
+ollama list    # confirm model is pulled
+```
+
+**ChromaDB collection empty**
+```bash
+python index.py   # re-run indexing
+```
+
+**Documents not found**
+Make sure your files are in the `documents/` folder before running `index.py`.
+
+**Port already in use**
+```bash
+# Change PORT in .env
+PORT=3001
+node server.js
+```
+## Demo document search MCP server
+
+![MCP Chat Streamable http demo](assets/documentsearch.png)
+*MCP Chat running with qwen2.5:7b via Ollama on Windows*
+---
+
+## License
+
+MIT
