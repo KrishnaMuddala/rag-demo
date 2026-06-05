@@ -11,7 +11,6 @@ uv.lock
 test.py
 test1.py
 test_ssh.py
-.env
 backup.txt
 .env
 package-lock.json
@@ -26,3 +25,4 @@ app.egg-info/PKG-INFO
 
 chroma/*
 rag_demo.egg-info/*
+docs/*
