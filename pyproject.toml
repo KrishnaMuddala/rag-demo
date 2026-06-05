@@ -1,0 +1,25 @@
+
+[project]
+name = "rag-demo"
+version = "0.1.0"
+description = "Rag Chat with local LLM (Ollama)"
+readme = "README.md"
+
+
+dependencies = [
+    # Core
+    "openai>=1.0.0",
+    "mcp[cli]>=1.8.0",
+    "prompt-toolkit>=3.0.51",
+    "python-dotenv>=1.1.0",
+    "chromadb",
+    "ollama",
+    "mcp[cli]>=1.8.0",
+    "flask>=3.0.0,<4.0.0",
+   
+]
+[tool.setuptools.packages.find]
+exclude = ["assets*", "public*", "node_modules*", "tests*","chroma"]
+
+[tool.uv]
+link-mode = "copy"
